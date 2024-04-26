@@ -1,0 +1,50 @@
+-- A --Zmodyfikuj numer telefonu w tabeli pracownicy, dodając do niego kierunkowy dla Polski w nawiasie (+48)
+
+ALTER TABLE ksiegowosc.pracownicy ADD COLUMN prefix_telefon VARCHAR(50); 
+
+UPDATE ksiegowosc.pracownicy 
+SET prefix_telefon = CONCAT('(+48)', nr_telefonu);
+-- The CONCAT() function adds two or more strings together.
+ALTER TABLE ksiegowosc.pracownicy DROP COLUMN nr_telefonu;
+
+ALTER TABLE ksiegowosc.pracownicy RENAME COLUMN prefix_telefon TO nr_telefonu;
+
+-- B -- Zmodyfikuj atrybut telefon w tabeli pracownicy tak, aby numer oddzielony był myślnikami wg wzoru: ‘555-222-333’
+
+UPDATE ksiegowosc.pracownicy
+SET nr_telefonu = CONCAT(LEFT(nr_telefonu, 5), ' ', SUBSTRING(nr_telefonu FROM 6 FOR 3),'-', SUBSTRING(nr_telefonu FROM 9 FOR 3), '-', RIGHT(nr_telefonu, 3));
+
+-- C -- Wyświetl wszystkie dane pracownika, którego nazwisko jest najdłuższe, używając dużych liter
+SELECT * FROM ksiegowosc.pracownicy
+WHERE CHARACTER_LENGTH(nazwisko) = (SELECT MAX(CHARACTER_LENGTH(nazwisko)) FROM ksiegowosc.pracownicy);
+
+-- D -- Wyświetl dane pracowników i ich pensje zakodowane przy pomocy algorytmu md5
+
+/* algorytm MD5 został zaprojektowany do konwersji ciągu znaków na 32-znakowy ciąg tekstowy
+przy użyciu 128-bitowego szyfrowania. Funkcja MD5 jest ważną i użyteczną funkcją w PostgreSQL 
+ponieważ funkcji MD5 możemy użyć np.: w momencie tworzenia użytkownika, aby zapewnić użytkownikowi 
+zaszyfrowane hasło.
+*/
+SELECT * FROM ksiegowosc.pracownicy;
+SELECT MD5(CONCAT(pr.id_pracownika, pr.imie, pr.nazwisko,pr.adres,  pr.nr_telefonu, p.kwota )) AS zakodowane_dane
+FROM ksiegowosc.wynagrodzenie w
+INNER JOIN ksiegowosc.pracownicy pr ON pr.id_pracownika = w.id_pracownika
+INNER JOIN ksiegowosc.pensja p ON p.id_pensji = w.id_pensji;
+
+-- F -- Wyświetl pracowników, ich pensje oraz premie. Wykorzystaj złączenie lewostronne.
+SELECT *
+FROM ksiegowosc.wynagrodzenie w
+LEFT JOIN ksiegowosc.pracownicy pr ON pr.id_pracownika = w.id_pracownika
+LEFT JOIN ksiegowosc.pensja pp ON pp.id_pensji = w.id_pensji
+LEFT JOIN ksiegowosc.premia pri ON pri.id_premii = w.id_premii;
+
+-- G -- wygeneruj raport (zapytanie), które zwróci w wyniki treść wg poniższego szablonu:
+SELECT CONCAT('Pracownik ', pr.imie, ' ', pr.nazwisko, ', w dniu ', w.data, ' otrzymał pensję całkowitą na kwotę ',
+              SUM(pp.kwota + COALESCE(pri.kwota, 0)), ' zł, gdzie wynagrodzenie zasadnicze wynosiło: ', pp.kwota, ' zł, premia: ',
+              COALESCE(pri.kwota, 0), ' zł, nadgodziny:',(CASE WHEN gd.liczba_godzin > 160 THEN (gd.liczba_godzin - 160) ELSE 0 END), 'h'  ) -- case zastosowany aby liczba nadgodzin nie była ujemna w przypadku braku tych nadgodzin
+FROM ksiegowosc.wynagrodzenie w
+LEFT JOIN ksiegowosc.pracownicy pr ON pr.id_pracownika = w.id_pracownika
+LEFT JOIN ksiegowosc.pensja pp ON pp.id_pensji = w.id_pensji
+LEFT JOIN ksiegowosc.premia pri ON pri.id_premii = w.id_premii
+LEFT JOIN ksiegowosc.godziny gd ON gd.id_godziny = w.id_godziny
+GROUP BY pr.imie, pr.nazwisko, w.data, pp.kwota, pri.kwota, gd.liczba_godzin

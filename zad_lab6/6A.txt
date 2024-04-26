@@ -1,0 +1,44 @@
+6A
+
+1) Dla tabeli zamowienia(id_produktu, nazwa_produktu, id_klienta, nazwa_klienta, data_zamowienia, cena_produktu, ilość, VAT, suma_brutto, suma_netto) określ wszystkie zależności funkcyjne.
+
+id_produktu -> nazwa_produktu, cena_produktu, VAT (unikalność nazwy produktu)
+suma_netto,  VAT -> suma_brutto 
+nazwa_produktu-> cena_produktu, VAT
+id_klienta-> nazwa_klienta, data_zamowienia, ilość  (unikalność nazwy klienta)
+data_zamowienia, id_klienta, id_produktu ->  nazwa_produktu, cena_produktu
+cena_produktu-> suma_brutto, suma_netto
+
+2) Wypisz wszystkie klucze kandydujące.
+
+Klucz kandydujący - podzbiór atrybutów,
+który jednoznacznie identyfikuje krotkę tabeli. W relacji może znajdować się wiele kluczy kandydujących.
+
+Zamówienia: klucze kandydujące:
+
+id_produktu + id_klienta + data_zamówienia - identyfikuje każde zamówienie
+
+id_klienta - identyfikuje wszystkie dane o kliencie
+
+id_produktu - identyfikuje wszystkie dane o produkcie
+
+id_klienta + data_zamówienia - identyfikuje wszystkie zamówienia klienta
+
+3) Dla tabeli pomieszczenia(id_pomieszczenia, numer_pomieszczenia, id_budynku, powierzchnia, liczba_okien, liczba_drzwi, ulica, miasto, kod_pocztowy) określ wszystkie zależności funkcyjne oraz klucze kandydujące.
+
+id_budynku ->  ulica, miasto, kod_pocztowy, id_pomieszczenia
+
+id_pomieszczenia -> numer_pomieszczenia, liczba_okien, liczba_drzwi, powierzchnia, id_budynku
+
+kod_pocztowy -> miasto
+ulica, miasto, kod_pocztowy -> id_budynku
+
+
+Klucze kandydujące:
+
+id_pomieszczenia - jako autoinkrementowany, unikalny identyfikator w tabeli jednoznacznie identyfikuje każde pomieszczenie
+
+id_budynku + numer pomieszczenia - identyfikuje wszystkie pomieszczenia
+
+
+
